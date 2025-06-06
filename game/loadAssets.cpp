@@ -1,0 +1,82 @@
+#include "loadAssets.h"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+std::map<std::string, Texture2D> textures;
+
+void loadStyles() {
+    Color redTransparent = { 255, 0, 0, 100 }; // красный с прозрачностью
+    int redTransparentHex = (redTransparent.r << 24) | (redTransparent.g << 16) | (redTransparent.b << 8) | redTransparent.a;
+
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 30);
+    GuiSetStyle(BUTTON, BASE_COLOR_NORMAL, 0x00000000);
+    GuiSetStyle(BUTTON, BORDER_COLOR_NORMAL, 0x00000000);
+    GuiSetStyle(BUTTON, TEXT_COLOR_NORMAL, 0x000000FF);
+    GuiSetStyle(BUTTON, BASE_COLOR_FOCUSED, 0x11111120);
+    GuiSetStyle(BUTTON, BORDER_COLOR_FOCUSED, 0x00000000);
+    GuiSetStyle(BUTTON, TEXT_COLOR_FOCUSED, 0x000000FF);
+    GuiSetStyle(BUTTON, BASE_COLOR_PRESSED, 0x00000040);
+    GuiSetStyle(BUTTON, BORDER_COLOR_PRESSED, 0x00000000);
+    GuiSetStyle(BUTTON, TEXT_COLOR_PRESSED, 0x000000FF);
+    GuiSetStyle(BUTTON, BASE_COLOR_DISABLED, redTransparentHex);
+    GuiSetStyle(BUTTON, BORDER_COLOR_DISABLED, 0x00000000);
+    GuiSetStyle(BUTTON, TEXT_COLOR_DISABLED, 0xFFFFFFFF); // белый текст
+
+
+
+    GuiSetStyle(TEXTBOX, BASE_COLOR_NORMAL, 0x00000000);
+    GuiSetStyle(TEXTBOX, BORDER_COLOR_NORMAL, 0x00000000);
+    GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL, 0x000000FF);
+    GuiSetStyle(TEXTBOX, BASE_COLOR_FOCUSED, 0x11111120);
+    GuiSetStyle(TEXTBOX, BORDER_COLOR_FOCUSED, 0x00000000);
+    GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, 0x000000FF);
+    GuiSetStyle(TEXTBOX, BASE_COLOR_PRESSED, 0x00000040);
+    GuiSetStyle(TEXTBOX, BORDER_COLOR_PRESSED, 0x00000000);
+    GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, 0x000000FF);
+
+    GuiSetStyle(TOGGLE, BASE_COLOR_NORMAL, 0x00000000);
+    GuiSetStyle(TOGGLE, BORDER_COLOR_NORMAL, 0x00000000);
+    GuiSetStyle(TOGGLE, TEXT_COLOR_NORMAL, 0x000000FF);
+    GuiSetStyle(TOGGLE, BASE_COLOR_FOCUSED, 0x11111120);
+    GuiSetStyle(TOGGLE, BORDER_COLOR_FOCUSED, 0x00000000);
+    GuiSetStyle(TOGGLE, TEXT_COLOR_FOCUSED, 0x000000FF);
+    GuiSetStyle(TOGGLE, BASE_COLOR_PRESSED, 0xFFB34720);
+    GuiSetStyle(TOGGLE, BORDER_COLOR_PRESSED, 0x00000000);
+    GuiSetStyle(TOGGLE, TEXT_COLOR_PRESSED, 0xFFB347FF);
+
+    GuiSetStyle(LISTVIEW, BASE_COLOR_NORMAL, 0x00000000);
+    GuiSetStyle(LISTVIEW, BORDER_COLOR_NORMAL, 0x00000000);
+    GuiSetStyle(LISTVIEW, TEXT_COLOR_NORMAL, 0xF0F0F0);
+    GuiSetStyle(LISTVIEW, BASE_COLOR_FOCUSED, 0x11111120);
+    GuiSetStyle(LISTVIEW, BORDER_COLOR_FOCUSED, 0x00000000);
+    GuiSetStyle(LISTVIEW, TEXT_COLOR_FOCUSED, 0xF0F0F0);
+    GuiSetStyle(LISTVIEW, BASE_COLOR_PRESSED, 0x00000040);
+    GuiSetStyle(LISTVIEW, BORDER_COLOR_PRESSED, 0x00000000);
+    GuiSetStyle(LISTVIEW, TEXT_COLOR_PRESSED, 0xF0F0F0);
+
+    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0x0F193C80);
+}
+
+void LoadTexturesFromDirectory(const std::string& directoryPath) {
+    for (const auto& entry : fs::directory_iterator(directoryPath)) {
+        if (entry.path().extension() == ".png") {
+            std::string filename = entry.path().stem().string();  // без .png
+            std::string fullPath = entry.path().string();
+            textures[filename] = LoadTexture(fullPath.c_str());
+        }
+    }
+}
+
+Texture2D GetTexture(const std::string& key) {
+    return textures.at(key);
+}
+
+void UnloadAllTextures() {
+    for (auto& pair : textures) {
+        UnloadTexture(pair.second);
+    }
+    textures.clear();
+}

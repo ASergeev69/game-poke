@@ -1,0 +1,10 @@
+pikachu Electric 35 55 30
+squirtle Water 44 48 65
+bulbasaur Poison 45 49 49
+charmander Fire 39 52 43
+jigglypuff Normal 115 45 20
+caterpie Bug 35 30 35
+pidgey Flying 40 45 40
+rattata Normal 30 56 35
+spearow Flying 40 60 30
+eevee Normal 55 55 50
