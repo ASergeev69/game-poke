@@ -13,6 +13,7 @@ int main() {
     char name[64] = "";
     bool editMode = false, togglePressed = false;
     int scrollIndex = 0, activeIndex = -1, focus = -1, curr = 0;
+
     const char* items[] = {
         "Save 1", "Save 2", "Save 3", "Save 4", "Save 5", "Save 6",
         "Save 7", "Save 8", "Save 9", "Save 10", "Save 11", "Save 12",

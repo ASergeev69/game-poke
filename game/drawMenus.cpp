@@ -117,7 +117,7 @@ void DrawPokemonSelect(const std::map<std::string, Pokemon>& allPokes) {
                     }   
                 }
             }
-            generateMap(5, 5, player.dificult, allPokes);
+            generateMap(5, 5, player.dificult);
             printMapToConsole();
             StartTransition(SCREEN_GAMEPLAY);
         }

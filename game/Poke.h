@@ -66,7 +66,7 @@ public:
 
     void setSkin(Texture2D tex) { skin = tex; }
 
-    // --- Перегрузка чтения из потока ---
+
     friend std::istream& operator>>(std::istream& is, Pokemon& poke) {
         std::string typeStr;
         is >> poke.name >> typeStr >> poke.maxHp >> poke.attack >> poke.defense;
