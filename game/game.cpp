@@ -40,9 +40,6 @@ int main() {
         case SCREEN_GAMEPLAY:
             DrawGameplay();
             break;
-        case BATTLE:
-            player.battle(); // или любая функция для экрана боя
-            break;
         }
 
         DrawTransition();

@@ -10,6 +10,9 @@ enum GameScreen { SCREEN_MENU, SCREEN_CHARACTER_SELECT, SCREEN_POKEMONS_SELECT, 
 extern GameScreen currentScreen;
 extern GameScreen nextScreen;
 
+extern Player player;
+extern mapObj** map = nullptr;
+
 extern bool selectedPokemons[10];
 
 extern bool transitioning;

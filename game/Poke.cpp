@@ -56,23 +56,3 @@ Type StringToType(const std::string& s) {
     if (s == "Flying") return Type::Flying;
     return Type::Normal;
 }
-
-void GenerateRandomTeam(Pokemon team[3], const std::map<std::string, Pokemon>& allPokes) {
-    std::vector<Pokemon> pool;
-    for (const auto& pair : allPokes) {
-        pool.push_back(pair.second);
-    }
-
-    if (pool.size() < 3) {
-        std::cerr << "Недостаточно покемонов в базе для генерации команды.\n";
-        return;
-    }
-
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
-
-    for (int i = 0; i < 3; ++i) {
-        int index = std::rand() % pool.size();
-        team[i] = pool[index];
-        pool.erase(pool.begin() + index); // чтобы не было повторений
-    }
-}

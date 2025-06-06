@@ -1,18 +1,9 @@
 ﻿#include "gamePlay.h"
-#include "drawMenus.h"
+#include "gameState.h"
 
 Player player;
 
 mapObj** map = nullptr;
-int selectedPoke = 0;
-int botSelectedPoke = 0;
-int currBot = 0;
-std::vector<Bot> bots;
-
-double waitStartTime = GetTime();
-bool waiting = true, waiting1 = true;
-bool task = 1;
-bool choice = 1;
 
 bool isValid(int x, int y) {
     return x >= 0 && y >= 0 && x < 10 && y < 10;
@@ -52,21 +43,6 @@ bool isReachable(mapObj** tempMap, int startX, int startY) {
     return reachable == passable;
 }
 
-std::vector<Bot> GenerateBotArray(int count, const std::map<std::string, Pokemon>& allPokes) {
-    std::vector<Bot> result;
-
-    if (allPokes.size() < 3) {
-        std::cerr << "FATAL: Недостаточно покемонов для генерации ботов (size = "
-            << allPokes.size() << ")\n";
-        return result;
-    }
-
-    for (int i = 0; i < count; ++i) {
-        result.emplace_back(allPokes); // вызывает Bot(const map<...>&)
-    }
-
-    return result;
-}
 
 void generateMap(int enemyCount, int healCount, int difficulty, const std::map<std::string, Pokemon>& allPokes) {
     std::random_device rd;
@@ -75,8 +51,6 @@ void generateMap(int enemyCount, int healCount, int difficulty, const std::map<s
         std::cout << "FATAL: Недостаточно покемонов!\n";
         abort(); // ← вот он
     }
-
-    bots = GenerateBotArray(enemyCount, allPokes);
     
     // Очистка старой карты
     if (map != nullptr) {
@@ -221,20 +195,6 @@ void DrawGameplay() {
         DrawSettings(855, 200);
     }
 }
-void DrawPokemonInfo(const Pokemon& p, Vector2 pos, bool isEnemy) {
-    std::string typeStr = TypeToString(p.getType());
-    std::string levelStr = "Lv. " + std::to_string(p.getHp() > 0 ? p.getHp() / 10 : 1); // примерная формула
-    std::string hpStr = "HP: " + std::to_string(p.getHp()) + " / " + std::to_string(p.getMaxHp());
-    std::string defStr = "DEF: " + std::to_string(p.getHp() > 0 ? p.getHp() / 2 : 10); // фейковый def
-
-    int fontSize = 20;
-    Color color = isEnemy ? MAROON : DARKBLUE;
-
-    DrawText(typeStr.c_str(), pos.x, pos.y, fontSize, color);
-    DrawText(levelStr.c_str(), pos.x, pos.y + 22, fontSize, color);
-    DrawText(hpStr.c_str(), pos.x, pos.y + 44, fontSize, color);
-    DrawText(defStr.c_str(), pos.x, pos.y + 66, fontSize, color);
-}
 
 void Player::walk(int step_x, int step_y)
 {
@@ -258,13 +218,6 @@ void Player::walk(int step_x, int step_y)
         x += step_x;
     }
     gainHP();
-
-    if (map[y][x].type == mapObjType::ENEMY)
-    {
-        map[y][x].type = mapObjType::AIR;
-        StartTransition(BATTLE);
-        currBot++;
-    }
     std::cout << x << " " << y << " " << std::endl;
 }
 
@@ -280,119 +233,4 @@ void Player::gainHP()
         map[y][x].type = mapObjType::AIR;
         map[y][x].texture = {};
     }
-}
-
-void Player::battle()
-{
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> dist(0, 2);
-
-    DrawTexture(GetTexture("battle"), 0, 0, WHITE);
-
-    DrawTextureEx(team[0].getSkin(), { 78, 786 }, 0, 2.0f, WHITE);
-    DrawTextureEx(team[1].getSkin(), { 352, 786 }, 0, 2.0f, WHITE);
-    DrawTextureEx(team[2].getSkin(), { 635, 786 }, 0, 2.0f, WHITE);
-    DrawPokemonInfo(team[0], { 89, 640 }, false);
-    DrawPokemonInfo(team[1], { 369, 640 }, false);
-    DrawPokemonInfo(team[2], { 646, 640 }, false);
-
-    const Bot& enemy = bots[currBot];
-    DrawPokemonInfo(enemy.team[0], { 742, 285 }, true);
-    DrawPokemonInfo(enemy.team[1], { 1025, 285 }, true);
-    DrawPokemonInfo(enemy.team[2], { 1302, 285 }, true);
-
-    DrawTextureEx(bots[currBot].team[0].getSkin(), { 726, 67 }, 0, 2.0f, WHITE);
-    DrawTextureEx(bots[currBot].team[1].getSkin(), { 1008, 67 }, 0, 2.0f, WHITE);
-    DrawTextureEx(bots[currBot].team[2].getSkin(), { 1300, 67 }, 0, 2.0f, WHITE);
-
-    Rectangle pokeRects[3] = {
-        {  89, 799, 133, 155 },
-        { 369, 799, 135, 155 },
-        { 646, 799, 141, 155 }
-    };
-
-    Rectangle botRects[3] = {
-    { 742, 74, 133, 152 },
-    { 1025, 74, 127, 152 },
-    { 1302, 74, 140, 152 }
-    };
-
-    Vector2 mouse = GetMousePosition();
-
-    for (int i = 0; i < 3; ++i) {
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mouse, pokeRects[i])) {
-            selectedPoke = i;
-        }
-
-        if (i == selectedPoke) {
-            DrawRectangleRec(pokeRects[i], Fade(BLUE, 0.3f));
-        }
-    }
-
-    // Подсветка выбранного покемона бота
-    for (int i = 0; i < 3; ++i) {
-        if (i == botSelectedPoke) {
-            DrawRectangleRec(botRects[i], Fade(RED, 0.3f));              // прозрачная заливка
-            DrawRectangleLinesEx(botRects[i], 3, MAROON);                // рамка
-        }
-    }
-    DrawTextureEx(team[selectedPoke].getSkin(), { 211, 278 }, 0, 2.5f, WHITE);
-
-    DrawTextureEx(bots[currBot].team[botSelectedPoke].getSkin(), { 1188, 410 }, 0, 2.5f, WHITE);
-    if (bots[currBot].teamIsAlive() && teamIsAlive())
-    {
-        if (task)
-        {
-            if (GuiButton({ 937, 819, 263, 107 }, "") && team[selectedPoke].getHp() > 0)
-            {
-                bots[currBot].team[botSelectedPoke].TakeDamage(team[selectedPoke].getMoves()[0].power);
-                player.exp++;
-                task = 0;
-                waiting = 1, waiting1 = 1, choice = 1;
-            }
-            if (GuiButton({ 1245, 822, 229, 104 }, "") && exp > 2 && team[selectedPoke].getHp() > 0)
-            {
-                bots[currBot].team[botSelectedPoke].TakeDamage(team[selectedPoke].getMoves()[1].power);
-                player.exp = 0;
-                task = 0;
-                waiting = 1, waiting1 = 1, choice = 1;
-            }
-        }
-        else
-        {
-            if (waiting) {
-                if (GetTime() - waitStartTime >= 5.0) {
-                    waiting = false;
-                }
-            }
-            else if (choice) {
-                botSelectedPoke = dist(rng);
-                if (bots[currBot].team[botSelectedPoke].getHp() > 0)
-                    choice = 0;
-            }
-
-            if (waiting1) {
-                if (GetTime() - waitStartTime >= 5.0) {
-                    waiting1 = false;
-                }
-            }
-            else {
-                if (bots[currBot].exp == 3 && bots[currBot].team[botSelectedPoke].getHp() > 0)
-                {
-                    team[selectedPoke].TakeDamage(bots[currBot].team[botSelectedPoke].getMoves()[1].power);
-                    task = 1;
-                }
-                else if (bots[currBot].team[botSelectedPoke].getHp() > 0)
-                {
-                    team[selectedPoke].TakeDamage(bots[currBot].team[botSelectedPoke].getMoves()[0].power);
-                    task = 1;
-                }
-            }
-        }
-    }
-    else if (!teamIsAlive())
-        currentScreen = SCREEN_MENU;
-    else if (!bots[currBot].teamIsAlive())
-        currentScreen = SCREEN_GAMEPLAY;
 }

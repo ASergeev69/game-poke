@@ -17,46 +17,12 @@ enum class mapObjType
     AIR
 };
 
-struct Bot {
-    std::string name;
-    Pokemon team[3];
-    int exp = 0;
-    bool teamIsAlive()
-    {
-        int countDie = 0;
-        for (int i{}; i < 3; ++i)
-            if (team[i].getHp() == 0)
-                countDie += 1;
-
-        return !(countDie == 3);
-    }
-
-    Bot(const std::map<std::string, Pokemon>& allPokes)
-    {
-        name = "bot";
-
-        GenerateRandomTeam(this->team, allPokes);
-    }
-    Bot()
-    {
-        name = "bot";
-    }
-};
-
-// Возвращает std::vector<Bot> заданного размера
-std::vector<Bot> GenerateBotArray(int count, const std::map<std::string, Pokemon>& allPokes);
-
 struct mapObj {
     mapObjType type;
     Texture2D texture;
     int x;
     int y;
 };
-
-extern mapObj** map;
-
-void DrawPokemonInfo(const Pokemon& p, Vector2 pos, bool isEnemy);
-
 
 bool isValid(int x, int y);
 
@@ -87,8 +53,6 @@ struct Player {
     void walk(int step_x, int step_y);
 
     void gainHP();
-
-    void battle();
 };
 
 extern Player player;

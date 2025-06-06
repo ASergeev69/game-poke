@@ -86,5 +86,4 @@ public:
         return os;
     }
 };
-void GenerateRandomTeam(Pokemon team[3], const std::map<std::string, Pokemon>& allPokes);
 std::map<std::string, Pokemon> LoadPokemonDatabase(const std::string& path);
